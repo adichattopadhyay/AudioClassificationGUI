@@ -4,7 +4,10 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, \
     QGridLayout, QCheckBox
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon
+
 from waveform_widget import WaveformWidget 
+from spectrogram_widget import SpectrogramWidget
+
 import sounddevice as sd
 import threading
 import librosa
@@ -130,6 +133,10 @@ class AudioWindow(QMainWindow):
         self.waveform_widget = WaveformWidget(self.file_name, parent=self)
         self.waveform_widget.set_selection_bounds.connect(self.selection_bounds)
 
+        # Create the spectrogram widget (initially hidden)
+        self.spectrogram_widget = SpectrogramWidget(self.file_name, parent=self)
+        self.spectrogram_widget.hide()
+
         # Create layout for checkboxes and labels
         checkbox_layout = QHBoxLayout()
         checkbox_layout.addWidget(self.adjust_labels_checkbox)
@@ -143,6 +150,7 @@ class AudioWindow(QMainWindow):
         layout = QGridLayout()
         layout.addWidget(self.waveform_widget, 0, 0, 1, 1, alignment=Qt.AlignTop)
         layout.addLayout(control_layout, 1, 0, 1, 1, alignment=Qt.AlignCenter | Qt.AlignTop)
+        layout.addWidget(self.spectrogram_widget, 2, 0, 1, 1, alignment=Qt.AlignTop)
 
         central_widget = QWidget()
         central_widget.setLayout(layout)
@@ -156,6 +164,7 @@ class AudioWindow(QMainWindow):
             # Load the audio data using librosa
             self.audio_data, self.sample_rate = librosa.load(self.file_name, sr=None, mono=True, dtype=float)
             self.waveform_widget.loadAudioData()
+            self.spectrogram_widget.loadAudioData()
         except Exception as e:
             print(f"Error loading audio data: {str(e)}")
             self.audio_data = None
@@ -225,11 +234,11 @@ class AudioWindow(QMainWindow):
 
     def onShowSpectrogramCheckboxChanged(self, state):
         if state == Qt.Checked:
-            # Handle checkbox checked state
-            print("Show Spectrograms checkbox checked")
+            # Show the spectrogram widget
+            self.spectrogram_widget.show()
         else:
-            # Handle checkbox unchecked state
-            print("Show Spectrograms checkbox unchecked")
+            # Hide the spectrogram widget
+            self.spectrogram_widget.hide()
 
 
 if __name__ == "__main__":
