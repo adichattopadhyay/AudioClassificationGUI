@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, \
     QVBoxLayout, QHBoxLayout, QFileDialog, QWidget, QSpacerItem, QSizePolicy, \
-    QGridLayout
+    QGridLayout, QCheckBox
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon
 from waveform_widget import WaveformWidget 
@@ -108,20 +108,41 @@ class AudioWindow(QMainWindow):
         self.setWindowTitle("Audio Window")
         self.setGeometry(100, 100, 800, 600)
 
+        # Play button
         self.audio_control_button = QPushButton('', self)
         self.audio_control_button.clicked.connect(self.onClickAudioControl)
         self.audio_control_button.setIcon(QIcon("audio gui\\images\\icons\\play.png"))
-        self.audio_control_button.setIconSize(QSize(60, 60))
-        self.audio_control_button.setStyleSheet("border-radius: 40; border: 2px solid black")
-        self.audio_control_button.setFixedSize(80, 80)  # Set fixed size for the button
+        self.audio_control_button.setIconSize(QSize(30, 30))
+        self.audio_control_button.setStyleSheet("border-radius: 20; border: 2px solid black")
+        self.audio_control_button.setFixedSize(40, 40)  # Set fixed size for the button
+
+        # Create checkboxes and labels
+        self.adjust_labels_checkbox = QCheckBox("Adjust Labels", self)
+        self.show_spectrogram_checkbox = QCheckBox("Show Spectrograms", self)
+        self.adjust_labels_checkbox.setChecked(False)  # Set default state
+        self.show_spectrogram_checkbox.setChecked(False)  # Set default state
+
+        # Connect checkbox signals to appropriate slots/methods
+        self.adjust_labels_checkbox.stateChanged.connect(self.onAdjustLabelsCheckboxChanged)
+        self.show_spectrogram_checkbox.stateChanged.connect(self.onShowSpectrogramCheckboxChanged)
 
         # Create the waveform widget and set the audio data
         self.waveform_widget = WaveformWidget(self.file_name, parent=self)
         self.waveform_widget.set_selection_bounds.connect(self.selection_bounds)
 
+        # Create layout for checkboxes and labels
+        checkbox_layout = QHBoxLayout()
+        checkbox_layout.addWidget(self.adjust_labels_checkbox)
+        checkbox_layout.addWidget(self.show_spectrogram_checkbox)
+
+        # Create layout for audio control button and checkboxes
+        control_layout = QHBoxLayout()
+        control_layout.addWidget(self.audio_control_button, alignment=Qt.AlignCenter)
+        control_layout.addLayout(checkbox_layout)
+
         layout = QGridLayout()
-        layout.addWidget(self.waveform_widget, 0, 0, 1, 1, alignment=Qt.AlignTop)  # Widget occupies row 0, column 0, and spans 1 row and 1 column
-        layout.addWidget(self.audio_control_button, 1, 0, 1, 1, alignment=Qt.AlignCenter | Qt.AlignTop)  # Button occupies row 1, column 0, and spans 1 row and 1 column
+        layout.addWidget(self.waveform_widget, 0, 0, 1, 1, alignment=Qt.AlignTop)
+        layout.addLayout(control_layout, 1, 0, 1, 1, alignment=Qt.AlignCenter | Qt.AlignTop)
 
         central_widget = QWidget()
         central_widget.setLayout(layout)
@@ -193,6 +214,22 @@ class AudioWindow(QMainWindow):
     def stopAudio(self):
         # Stop audio playback
         sd.stop()
+
+    def onAdjustLabelsCheckboxChanged(self, state):
+        if state == Qt.Checked:
+            # Handle checkbox checked state
+            print("Adjust Labels checkbox checked")
+        else:
+            # Handle checkbox unchecked state
+            print("Adjust Labels checkbox unchecked")
+
+    def onShowSpectrogramCheckboxChanged(self, state):
+        if state == Qt.Checked:
+            # Handle checkbox checked state
+            print("Show Spectrograms checkbox checked")
+        else:
+            # Handle checkbox unchecked state
+            print("Show Spectrograms checkbox unchecked")
 
 
 if __name__ == "__main__":
