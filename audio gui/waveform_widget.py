@@ -10,7 +10,7 @@ from PyQt5.QtCore import pyqtSignal
 
 
 # Constants for the waveform visualization
-WAVEFORM_HEIGHT_PERCENTAGE = 0.4
+WAVEFORM_HEIGHT_PERCENTAGE = 0.35
 
 class WaveformWidget(QWidget):
     # Define signals for audio playback start and stop

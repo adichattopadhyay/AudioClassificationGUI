@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from matplotlib.colors import Normalize
 import numpy as np
 import librosa
 import matplotlib.pyplot as plt
@@ -20,7 +21,7 @@ class SpectrogramWidget(QWidget):
     def initUI(self):
         layout = QVBoxLayout(self)
 
-       # Create a Matplotlib figure and canvas
+        # Create a Matplotlib figure and canvas
         self.figure = Figure(figsize=(self.width() / 100, self.height() / 100), dpi=100)  # Adjust the figsize to fit the widget size
         self.canvas = FigureCanvas(self.figure)
         layout.addWidget(self.canvas)
@@ -30,8 +31,7 @@ class SpectrogramWidget(QWidget):
         self.setMinimumHeight(height)
         self.setMaximumHeight(height)
 
-
-        layout.addWidget(self.canvas)
+        layout.addWidget(self.canvas, stretch=1)
 
     def loadAudioData(self):
         try:
@@ -56,15 +56,14 @@ class SpectrogramWidget(QWidget):
             # Compute the spectrogram using librosa
             spectrogram = librosa.amplitude_to_db(np.abs(librosa.stft(self.audio_data)), ref=np.max)
 
-            # Plot the spectrogram
-            ax = self.figure.add_subplot(111)
-            librosa.display.specshow(spectrogram, sr=self.sample_rate, x_axis='time', y_axis='log', ax=ax)
-            plt.colorbar(format='%+2.0f dB')
+            # Create a grid of subplots with 2 rows and 1 column
+            gs = self.figure.add_gridspec(2, 1, height_ratios=[0.1, 0.9])
 
+            # Plot the spectrogram in the bottom subplot
+            ax = self.figure.add_subplot(gs[1])
             ax.set_xlabel("")  # Remove x-axis label completely
             ax.set_ylabel("")  # Remove y-axis label completely
-            ax.tick_params(axis='x', direction='in', pad=-15)
-            ax.tick_params(axis='y', direction='in', pad=-30)
+            ax.xaxis.tick_top()
 
             # Convert x-axis ticks from sample indices to seconds
             sample_rate = self.sample_rate
@@ -73,4 +72,11 @@ class SpectrogramWidget(QWidget):
             ax.set_xticks(np.linspace(0, num_samples, num=11))
             ax.set_xticklabels([f"{i:.1f}" for i in np.linspace(0, num_seconds, num=11)])
 
+            im = librosa.display.specshow(spectrogram, sr=self.sample_rate, x_axis='time', y_axis='log', ax=ax)
+
+            # Create a new axis for the color bar in the top subplot
+            cax = self.figure.add_subplot(gs[0])
+            plt.colorbar(im, cax=cax, orientation='horizontal', format='%+2.0f dB')
+
+            self.figure.tight_layout()
             self.canvas.draw()
