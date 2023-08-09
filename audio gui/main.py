@@ -213,7 +213,7 @@ class AudioWindow(QMainWindow):
                 # Wait until the audio playback is complete
                 sd.wait()
 
-                # Audio playback completed
+                # Audio playback completed  
                 self.audio_control_button.setIcon(QIcon("audio gui\\images\\icons\\play.png"))
                 self.playing = False
 
@@ -227,6 +227,7 @@ class AudioWindow(QMainWindow):
     def onAdjustLabelsCheckboxChanged(self, state):
         if state == Qt.Checked:
             # Handle checkbox checked state
+            self.show_spectrogram_checkbox.setChecked(False)
             print("Adjust Labels checkbox checked")
         else:
             # Handle checkbox unchecked state
@@ -235,6 +236,7 @@ class AudioWindow(QMainWindow):
     def onShowSpectrogramCheckboxChanged(self, state):
         if state == Qt.Checked:
             # Show the spectrogram widget
+            self.adjust_labels_checkbox.setChecked(False)
             self.spectrogram_widget.show()
         else:
             # Hide the spectrogram widget

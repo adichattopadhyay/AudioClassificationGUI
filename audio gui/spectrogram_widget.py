@@ -1,12 +1,13 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from matplotlib.colors import Normalize
+import matplotlib.patheffects as path_effects
+import matplotlib.colorbar as cbr
 import numpy as np
 import librosa
 import matplotlib.pyplot as plt
 
-WAVEFORM_HEIGHT_PERCENTAGE = 0.4
+WAVEFORM_HEIGHT_PERCENTAGE = 0.42
 
 class SpectrogramWidget(QWidget):
     def __init__(self, file_name, parent=None):
@@ -72,11 +73,26 @@ class SpectrogramWidget(QWidget):
             ax.set_xticks(np.linspace(0, num_samples, num=11))
             ax.set_xticklabels([f"{i:.1f}" for i in np.linspace(0, num_seconds, num=11)])
 
+            # Customize tick parameters for the spectrogram
+            ax.tick_params(axis='x', direction='in', pad=-15, width=2, color='white', labelcolor='white')
+            ax.tick_params(axis='y', direction='in', pad=-30, width=2, color='white', labelcolor='white')
+
             im = librosa.display.specshow(spectrogram, sr=self.sample_rate, x_axis='time', y_axis='log', ax=ax)
 
             # Create a new axis for the color bar in the top subplot
             cax = self.figure.add_subplot(gs[0])
-            plt.colorbar(im, cax=cax, orientation='horizontal', format='%+2.0f dB')
+            cbar = cbr.ColorbarBase(cax, im, orientation='horizontal', format='%+2.0f dB')
+            cbar.ax.xaxis.set_ticks_position("top")
+            cbar.ax.tick_params(axis='x', direction='in', pad=-15, color='white', labelcolor='white')
+            
+            # Adjust the position of the x tick labels for the color bar
+            x_tick_labels = cbar.ax.get_xticklabels()
+            x_tick_positions = cbar.ax.get_xticks()
+            x_tick_positions[0] += 2  # Move the leftmost tick 2 units to the right
+            x_tick_positions[-1] -= 2  # Move the rightmost tick 2 units to the left
+            cbar.ax.set_xticks(x_tick_positions)
+            cbar.ax.set_xticklabels(x_tick_labels)
+            x_tick_labels[-1].set_color('black')  # Change color of the rightmost tick label
 
             self.figure.tight_layout()
             self.canvas.draw()
