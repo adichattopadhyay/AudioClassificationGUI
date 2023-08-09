@@ -1,11 +1,9 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-import matplotlib.patheffects as path_effects
 import matplotlib.colorbar as cbr
 import numpy as np
 import librosa
-import matplotlib.pyplot as plt
 
 WAVEFORM_HEIGHT_PERCENTAGE = 0.42
 
