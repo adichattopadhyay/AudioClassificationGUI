@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, \
     QVBoxLayout, QHBoxLayout, QFileDialog, QWidget, QSpacerItem, QSizePolicy, \
-    QGridLayout, QCheckBox
+    QGridLayout, QCheckBox, QComboBox, QDialog, QLineEdit
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon
 
@@ -137,6 +137,10 @@ class AudioWindow(QMainWindow):
         self.spectrogram_widget = SpectrogramWidget(self.file_name, parent=self)
         self.spectrogram_widget.hide()
 
+        # Create the dropdown widget (initially hidden)
+        self.adjust_labels_dropdown = QComboBox(self)
+        self.adjust_labels_dropdown.hide()
+
         # Create layout for checkboxes and labels
         checkbox_layout = QHBoxLayout()
         checkbox_layout.addWidget(self.adjust_labels_checkbox)
@@ -146,6 +150,7 @@ class AudioWindow(QMainWindow):
         control_layout = QHBoxLayout()
         control_layout.addWidget(self.audio_control_button, alignment=Qt.AlignCenter)
         control_layout.addLayout(checkbox_layout)
+        control_layout.addWidget(self.adjust_labels_dropdown)
 
         layout = QGridLayout()
         layout.addWidget(self.waveform_widget, 0, 0, 1, 1, alignment=Qt.AlignTop)
@@ -228,10 +233,12 @@ class AudioWindow(QMainWindow):
         if state == Qt.Checked:
             # Handle checkbox checked state
             self.show_spectrogram_checkbox.setChecked(False)
-            print("Adjust Labels checkbox checked")
+            self.populateAdjustLabelsDropdown()
+            self.adjust_labels_dropdown.currentIndexChanged.connect(self.renameLabelPopup)
+            self.adjust_labels_dropdown.show()
         else:
             # Handle checkbox unchecked state
-            print("Adjust Labels checkbox unchecked")
+            self.adjust_labels_dropdown.hide()
 
     def onShowSpectrogramCheckboxChanged(self, state):
         if state == Qt.Checked:
@@ -241,7 +248,40 @@ class AudioWindow(QMainWindow):
         else:
             # Hide the spectrogram widget
             self.spectrogram_widget.hide()
+    
+    def populateAdjustLabelsDropdown(self):
+        # Clear existing items in the dropdown
+        self.adjust_labels_dropdown.clear()
 
+        # Get the classification labels from waveform_widget
+        processed_data = self.waveform_widget.getProcessedData()
+
+        for data in processed_data:
+            self.adjust_labels_dropdown.addItem(data[2])
+
+    def renameLabelPopup(self, index):
+        if index >= 0:
+            selected_label = self.adjust_labels_dropdown.currentText()
+
+            popup = QDialog(self)
+            popup.setWindowTitle("Rename Label")
+            layout = QVBoxLayout()
+
+            label_input = QLineEdit(self)
+            submit_button = QPushButton("Submit", self)
+
+            submit_button.clicked.connect(lambda: self.handleLabelRename(selected_label, label_input.text(), popup))
+
+            layout.addWidget(QLabel("Rename label:"))
+            layout.addWidget(label_input)
+            layout.addWidget(submit_button)
+
+            popup.setLayout(layout)
+            popup.exec_()
+
+    def handleLabelRename(self, old_label, new_label, popup):
+        print("hi")
+        popup.close()  # Close the popup
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
