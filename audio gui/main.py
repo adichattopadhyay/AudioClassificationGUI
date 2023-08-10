@@ -104,6 +104,8 @@ class AudioWindow(QMainWindow):
         self.playing = False  # Keep track of audio playback state
         self.start_index = None  # Start index of selected audio
         self.end_index = None  # End index of selected audio
+        self.processed_data = None
+        self.open_popup = True
 
         self.initUI()
 
@@ -254,13 +256,15 @@ class AudioWindow(QMainWindow):
         self.adjust_labels_dropdown.clear()
 
         # Get the classification labels from waveform_widget
-        processed_data = self.waveform_widget.getProcessedData()
+        self.processed_data = self.waveform_widget.getProcessedData()
 
-        for data in processed_data:
+        for data in self.processed_data:
             self.adjust_labels_dropdown.addItem(data[2])
 
+        self.open_popup = True
+
     def renameLabelPopup(self, index):
-        if index >= 0:
+        if index >= 0 and self.open_popup:
             selected_label = self.adjust_labels_dropdown.currentText()
 
             popup = QDialog(self)
@@ -270,7 +274,8 @@ class AudioWindow(QMainWindow):
             label_input = QLineEdit(self)
             submit_button = QPushButton("Submit", self)
 
-            submit_button.clicked.connect(lambda: self.handleLabelRename(selected_label, label_input.text(), popup))
+            submit_button.clicked.connect(popup.accept)
+            submit_button.clicked.connect(lambda: self.handleLabelRename(selected_label, label_input.text()))
 
             layout.addWidget(QLabel("Rename label:"))
             layout.addWidget(label_input)
@@ -279,9 +284,18 @@ class AudioWindow(QMainWindow):
             popup.setLayout(layout)
             popup.exec_()
 
-    def handleLabelRename(self, old_label, new_label, popup):
+    def handleLabelRename(self, old_label, new_label):
+        self.open_popup = False
+        for data in self.processed_data:
+            if data[2] == old_label:
+                data[2] = new_label
+
+        self.waveform_widget.setProceessedData(self.processed_data)
+        self.populateAdjustLabelsDropdown()
+        self.waveform_widget.addLines()
+
         print("hi")
-        popup.close()  # Close the popup
+        
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
