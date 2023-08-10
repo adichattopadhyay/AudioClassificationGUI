@@ -209,3 +209,9 @@ class WaveformWidget(QWidget):
         time_obj = t.gmtime(time_in_seconds)
         timestamp = t.strftime("%H:%M:%S.", time_obj) + f"{milliseconds:03d}"
         return timestamp
+
+    def getProcessedData(self):
+        return self.processed_data
+    
+    def setProceessedData(self, data):
+        self.processed_data = data
