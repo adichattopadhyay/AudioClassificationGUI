@@ -234,18 +234,17 @@ class AudioWindow(QMainWindow):
     def onAdjustLabelsCheckboxChanged(self, state):
         if state == Qt.Checked:
             # Handle checkbox checked state
-            self.show_spectrogram_checkbox.setChecked(False)
             self.populateAdjustLabelsDropdown()
             self.adjust_labels_dropdown.currentIndexChanged.connect(self.renameLabelPopup)
             self.adjust_labels_dropdown.show()
         else:
             # Handle checkbox unchecked state
+            self.adjust_labels_dropdown.currentIndexChanged.disconnect()
             self.adjust_labels_dropdown.hide()
 
     def onShowSpectrogramCheckboxChanged(self, state):
         if state == Qt.Checked:
             # Show the spectrogram widget
-            self.adjust_labels_checkbox.setChecked(False)
             self.spectrogram_widget.show()
         else:
             # Hide the spectrogram widget
@@ -292,7 +291,7 @@ class AudioWindow(QMainWindow):
 
         self.waveform_widget.setProceessedData(self.processed_data)
         self.populateAdjustLabelsDropdown()
-        self.waveform_widget.addLines()
+        self.waveform_widget.changeText()
 
         print("hi")
         

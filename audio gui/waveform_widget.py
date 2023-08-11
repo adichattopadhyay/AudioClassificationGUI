@@ -33,6 +33,8 @@ class WaveformWidget(QWidget):
         self.selection_made = False
         self.is_selecting = False
 
+        self.texts = []
+
         self.initUI()
 
     def initUI(self):
@@ -130,8 +132,34 @@ class WaveformWidget(QWidget):
 
                 # Add text label with classification at the midpoint of the line
                 text_x = (start_time_index + end_time_index) / 2
-                self.ax.text(text_x, 0.05, classification, color='white', fontsize=12, ha='center', va='center', weight='bold', path_effects=[path_effects.Stroke(linewidth=3, foreground='black'),
+                text = self.ax.text(text_x, 0.05, classification, color='white', fontsize=12, ha='center', va='center', weight='bold', path_effects=[path_effects.Stroke(linewidth=3, foreground='black'),
                        path_effects.Normal()])
+
+                self.texts.append(text)
+
+    def changeText(self): 
+        i = 0
+        changed = False
+
+        while not changed and i < len(self.texts):
+            text = self.texts[i].get_text()
+
+            j = 0
+            found = False
+            
+            while not found and j < len(self.processed_data):
+                if self.processed_data[j][2] == text:
+                    found = True
+                j += 1
+            
+            if not found:
+                self.texts[i].set_text(self.processed_data[i][2])
+                self.canvas.draw()
+                changed = True
+
+            i += 1
+
+            
 
     def convertTimeToIndex(self, timestamp):
         # Convert HR:MM:SS.SSS timestamp to time index in milliseconds
