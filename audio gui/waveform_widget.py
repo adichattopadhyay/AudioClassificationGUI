@@ -1,12 +1,13 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.patches import Rectangle
 import matplotlib.patheffects as path_effects
+from PyQt5.QtGui import QIcon
 import numpy as np
 import librosa
 import time as t
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import pyqtSignal, QSize, Qt
 
 
 # Constants for the waveform visualization
@@ -35,6 +36,12 @@ class WaveformWidget(QWidget):
 
         self.texts = []
 
+        self.zoomed_in = False
+        self.zoom_start_index = None
+        self.zoom_end_index = None
+        self.zoom_in_button = None
+        self.zoom_out_button = None
+
         self.initUI()
 
     def initUI(self):
@@ -49,6 +56,33 @@ class WaveformWidget(QWidget):
         height = int(self.parent().height() * WAVEFORM_HEIGHT_PERCENTAGE * 2)
         self.setMinimumHeight(height)
         self.setMaximumHeight(height)
+
+        # Create icons for zoom in and zoom out
+        self.zoom_in_icon = QIcon("audio gui\\images\\icons\\zoom_in.png")
+        self.zoom_out_icon = QIcon("audio gui\\images\\icons\\zoom_out.png")
+
+        # Create buttons for zoom in and zoom out
+        self.zoom_in_button = QPushButton('', self)
+        self.zoom_in_button.setIcon(self.zoom_in_icon)
+        self.zoom_in_button.setIconSize(QSize(30, 30))
+        self.zoom_in_button.setFixedSize(QSize(30, 30))
+        self.zoom_in_button.setFlat(True)
+        self.zoom_in_button.hide()
+        self.zoom_in_button.clicked.connect(self.zoomInClicked)
+
+        self.zoom_out_button = QPushButton('', self)
+        self.zoom_out_button.setIcon(self.zoom_out_icon)
+        self.zoom_out_button.setIconSize(QSize(30, 30))
+        self.zoom_out_button.setFixedSize(QSize(30, 30))
+        self.zoom_out_button.setFlat(True)
+        self.zoom_out_button.hide()
+        self.zoom_out_button.clicked.connect(self.zoomOutClicked)
+
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.zoom_in_button, alignment=Qt.AlignTop | Qt.AlignRight)
+        button_layout.addWidget(self.zoom_out_button, alignment=Qt.AlignTop | Qt.AlignRight)
+        button_layout.addStretch(1)  # Add some spacing between buttons and the edge of the widget
+        layout.addLayout(button_layout)  # Add the button layout to the main layout
 
         self.canvas.mpl_connect('button_press_event', self.mousePressEvent)
         self.canvas.mpl_connect('motion_notify_event', self.mouseMoveEvent)
@@ -159,7 +193,35 @@ class WaveformWidget(QWidget):
 
             i += 1
 
-            
+    def zoomInClicked(self):
+        if not self.zoomed_in and self.zoom_start_index is not None and self.zoom_end_index is not None:
+            self.zoomed_in = True
+            self.zoom_in_button.hide()  # Hide zoom in button
+            self.zoom_out_button.show()  # Show zoom out button
+
+            # Calculate the zoomed-in x-axis range
+            new_xlim = (self.zoom_start_index, self.zoom_end_index)
+
+            # Update the x-axis range of the waveform graph
+            self.ax.set_xlim(new_xlim)
+            self.canvas.draw()
+
+            # Update the spectrogram widget to match the zoomed-in waveform
+            #self.parent().spectrogram_widget.updateSpectrogramRange(new_xlim)
+
+    def zoomOutClicked(self):
+        if self.zoomed_in:
+            self.zoomed_in = False
+            self.zoom_out_button.hide()  # Hide zoom out button
+            self.zoom_in_button.show()  # Show zoom in button
+
+            # Reset the x-axis range of the waveform graph to cover the entire audio data
+            full_xlim = (0, len(self.audio_data))
+            self.ax.set_xlim(full_xlim)
+            self.canvas.draw()
+
+            # Update the spectrogram widget to match the full waveform
+            #self.parent().spectrogram_widget.updateSpectrogramRange(full_xlim)
 
     def convertTimeToIndex(self, timestamp):
         # Convert HR:MM:SS.SSS timestamp to time index in milliseconds
@@ -208,6 +270,9 @@ class WaveformWidget(QWidget):
         # Emit signal to start audio playback with the selected audio range
         if self.start_index is not None and self.end_index is not None:
             self.set_selection_bounds.emit(self.start_index, self.end_index)
+            self.zoom_start_index = self.start_index  # Store zoom start index
+            self.zoom_end_index = self.end_index  # Store zoom end index
+            self.zoom_in_button.show()  # Show zoom in button
 
     def drawSelection(self, start_index, end_index):
         # Method to update the position of the selection overlay on the waveform plot

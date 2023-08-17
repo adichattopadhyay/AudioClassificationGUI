@@ -135,6 +135,9 @@ class AudioWindow(QMainWindow):
         self.waveform_widget = WaveformWidget(self.file_name, parent=self)
         self.waveform_widget.set_selection_bounds.connect(self.selection_bounds)
 
+        self.waveform_widget.zoom_in_button.clicked.connect(self.zoomInWaveform)
+        self.waveform_widget.zoom_out_button.clicked.connect(self.zoomOutWaveform)
+
         # Create the spectrogram widget (initially hidden)
         self.spectrogram_widget = SpectrogramWidget(self.file_name, parent=self)
         self.spectrogram_widget.hide()
@@ -293,7 +296,12 @@ class AudioWindow(QMainWindow):
         self.populateAdjustLabelsDropdown()
         self.waveform_widget.changeText()
 
-        print("hi")
+    def zoomInWaveform(self):
+        self.waveform_widget.zoomInClicked()
+
+    def zoomOutWaveform(self):
+        self.waveform_widget.zoomOutClicked()
+        
         
 
 if __name__ == "__main__":
