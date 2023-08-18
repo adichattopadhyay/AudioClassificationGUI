@@ -194,7 +194,7 @@ class WaveformWidget(QWidget):
             i += 1
 
     def zoomInClicked(self):
-        if not self.zoomed_in and self.zoom_start_index is not None and self.zoom_end_index is not None:
+        if self.zoom_start_index is not None and self.zoom_end_index is not None:
             self.zoomed_in = True
             self.zoom_in_button.hide()  # Hide zoom in button
             self.zoom_out_button.show()  # Show zoom out button
@@ -213,7 +213,6 @@ class WaveformWidget(QWidget):
         if self.zoomed_in:
             self.zoomed_in = False
             self.zoom_out_button.hide()  # Hide zoom out button
-            self.zoom_in_button.show()  # Show zoom in button
 
             # Reset the x-axis range of the waveform graph to cover the entire audio data
             full_xlim = (0, len(self.audio_data))
