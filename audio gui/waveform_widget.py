@@ -132,6 +132,8 @@ class WaveformWidget(QWidget):
             print(f"Error loading audio data: {str(e)}")
             self.audio_data = None
 
+    # TODO: Implement backend
+    # This function is where the backend can be implemented
     def runBackendProcessing(self):
         # Placeholder for backend processing
         # Sleep for 2 seconds to simulate backend processing
