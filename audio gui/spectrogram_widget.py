@@ -95,7 +95,3 @@ class SpectrogramWidget(QWidget):
             self.figure.tight_layout()
             self.canvas.draw()
     
-        def updateSpectrogramRange(self, new_xlim):
-            # Update the x-axis range of the spectrogram to match the zoomed-in waveform
-            # You can use a similar approach as in the WaveformWidget
-            pass
