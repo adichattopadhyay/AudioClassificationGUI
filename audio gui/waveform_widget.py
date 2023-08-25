@@ -9,6 +9,7 @@ import librosa
 import time as t
 from PyQt5.QtCore import pyqtSignal, QSize, Qt
 
+import backend_methods
 
 # Constants for the waveform visualization
 WAVEFORM_HEIGHT_PERCENTAGE = 0.35
@@ -132,9 +133,21 @@ class WaveformWidget(QWidget):
             print(f"Error loading audio data: {str(e)}")
             self.audio_data = None
 
-    # TODO: Implement backend
-    # This function is where the backend can be implemented
     def runBackendProcessing(self):
+        self.processed_data = backend_methods.runBackendProcessing(self.file_name)
+
+        # Remove labeless chunks
+        index = -1
+        for i in range(len(self.processed_data)):
+            if self.processed_data[i][0] == 0:
+                index = i
+
+        if index >= 0:
+            self.processed_data.pop(index)
+
+        self.addLines()  # Update the waveform graph with the processed data
+    
+    def dummyBackEnd(self):
         # Placeholder for backend processing
         # Sleep for 2 seconds to simulate backend processing
         t.sleep(2)
