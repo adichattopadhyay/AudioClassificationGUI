@@ -45,5 +45,3 @@ def runBackendProcessing(path):
         processed_data[i][1] = end_timestamp
         start_timestamp = end_timestamp
     return processed_data
-
-print(runBackendProcessing("Rooster.wav"))
